@@ -56,7 +56,7 @@ func (res *DVAResponse) MakeDVAResponse() []byte {
 	buf := make([]byte, DVA_RESPONSE_LEN)
 	LE.PutUint64(buf[0:8], res.Magic)
 	LE.PutUint32(buf[8:12], res.DeviceID)
-	buf[13] = BoolToByte(res.State)
+	buf[12] = BoolToByte(res.State)
 
 	return buf
 }
