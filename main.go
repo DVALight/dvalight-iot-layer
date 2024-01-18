@@ -14,8 +14,11 @@ const DVA_DPORT = 1337
 
 const DVA_MAGIC uint64 = 0x544847494C415644
 const DVA_REQUEST_LEN = 8 + 4
+const DVA_RESPONSE_LEN = 8 + 4 + 1
 
 const DVA_ENDPOINT = "http://localhost:4444/device"
+
+var LE = binary.LittleEndian
 
 type DVARequest struct {
 	Magic    uint64
@@ -27,8 +30,8 @@ func (req *DVARequest) ParseDVARequest(buf []byte, len int) bool {
 		return false
 	}
 
-	req.Magic = binary.LittleEndian.Uint64(buf[0:8])
-	req.DeviceID = binary.LittleEndian.Uint32(buf[8:12])
+	req.Magic = LE.Uint64(buf[0:8])
+	req.DeviceID = LE.Uint32(buf[8:12])
 
 	return req.Magic == DVA_MAGIC
 }
@@ -37,6 +40,25 @@ type DVAResponse struct {
 	Magic    uint64
 	DeviceID uint32 `json:"id"`
 	State    bool   `json:"state"`
+}
+
+func BoolToByte(val bool) byte {
+	if val {
+		return 1
+	} else {
+		return 0
+	}
+}
+
+func (res *DVAResponse) MakeDVAResponse() []byte {
+	res.Magic = DVA_MAGIC
+
+	buf := make([]byte, DVA_RESPONSE_LEN)
+	LE.PutUint64(buf[0:8], res.Magic)
+	LE.PutUint32(buf[8:12], res.DeviceID)
+	buf[13] = BoolToByte(res.State)
+
+	return buf
 }
 
 func main() {
@@ -83,7 +105,10 @@ func main() {
 				fmt.Printf("json error: %s\n", err)
 			}
 
-			fmt.Println(res)
+			_, err = conn.WriteToUDP(res.MakeDVAResponse(), devices[res.DeviceID])
+			if err != nil {
+				fmt.Printf("WriteToUDP error: %s\n", err)
+			}
 		} else {
 			fmt.Println("failed to parse DVA request")
 		}
