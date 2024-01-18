@@ -13,19 +13,19 @@ const DVA_MAGIC uint64 = 0x544847494C415644
 const DVA_REQUEST_LEN = 8 + 4
 
 type DVARequest struct {
-	magic    uint64
-	deviceId uint32
+	Magic    uint64
+	DeviceID uint32
 }
 
-func (req *DVARequest) parseDVARequest(buf []byte, len int) bool {
+func (req *DVARequest) ParseDVARequest(buf []byte, len int) bool {
 	if len < DVA_REQUEST_LEN {
 		return false
 	}
 
-	req.magic = binary.LittleEndian.Uint64(buf[0:8])
-	req.deviceId = binary.LittleEndian.Uint32(buf[8:12])
+	req.Magic = binary.LittleEndian.Uint64(buf[0:8])
+	req.DeviceID = binary.LittleEndian.Uint32(buf[8:12])
 
-	return req.magic == DVA_MAGIC
+	return req.Magic == DVA_MAGIC
 }
 
 func main() {
@@ -47,10 +47,10 @@ func main() {
 		}
 
 		var req DVARequest
-		if req.parseDVARequest(buf[0:len], len) {
-			devices[req.deviceId] = addr
+		if req.ParseDVARequest(buf[0:len], len) {
+			devices[req.DeviceID] = addr
 
-			fmt.Printf("device %d request\n", req.deviceId)
+			fmt.Printf("device %d request\n", req.DeviceID)
 		} else {
 			fmt.Println("failed to parse DVA request")
 		}
