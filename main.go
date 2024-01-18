@@ -106,7 +106,9 @@ func main() {
 			}
 
 			_, err = conn.WriteToUDP(res.MakeDVAResponse(), devices[res.DeviceID])
-			if err != nil {
+			if err == nil {
+				fmt.Printf("sent response to %d device\n", res.DeviceID)
+			} else {
 				fmt.Printf("WriteToUDP error: %s\n", err)
 			}
 		} else {
