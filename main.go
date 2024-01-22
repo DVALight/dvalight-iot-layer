@@ -14,7 +14,7 @@ const DVA_DPORT = 1337
 
 const DVA_MAGIC uint64 = 0x544847494C415644
 const DVA_REQUEST_LEN = 8 + 4
-const DVA_RESPONSE_LEN = 8 + 4 + 1
+const DVA_RESPONSE_LEN = 8 + 4 + 4 + 1
 
 const DVA_ENDPOINT = "http://localhost:4444/device"
 
@@ -39,6 +39,7 @@ func (req *DVARequest) ParseDVARequest(buf []byte, len int) bool {
 type DVAResponse struct {
 	Magic    uint64
 	DeviceID uint32 `json:"id"`
+	Color    uint32 `json:"color"`
 	State    bool   `json:"state"`
 }
 
@@ -56,7 +57,8 @@ func (res *DVAResponse) MakeDVAResponse() []byte {
 	buf := make([]byte, DVA_RESPONSE_LEN)
 	LE.PutUint64(buf[0:8], res.Magic)
 	LE.PutUint32(buf[8:12], res.DeviceID)
-	buf[12] = BoolToByte(res.State)
+	LE.PutUint32(buf[12:16], res.Color)
+	buf[16] = BoolToByte(res.State)
 
 	return buf
 }
